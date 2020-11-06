@@ -1,3 +1,9 @@
+# Project
+These are some of my notes while playing around with GoBGP so I don't completely forget.
+
+TOML still makes my head spin a bit, so the config is converted to YAML.
+This is probably a mistake, but `/shrug`.
+
 # Quick Start
 ```sh
 # Term1
