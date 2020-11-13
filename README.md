@@ -43,4 +43,30 @@ gobgp vrf add foo rd 1:100 rt both 1:100
 gobgp vrf foo rib -a ipv4 add 1.2.3.0/24 origin igp aspath "1 2 3 4" nexthop "1.2.3.4"
 gobgp vrf foo rib -a ipv6 add 2001:db8::/64 origin igp aspath "1 2 3 4" nexthop "2001:db8::1"
 gobgp neigh add 10.0.0.2 as 1234 family ipv4-unicast,ipv6-unicast vrf foo
+
+gobgp global rib -a ipv4 add 1.2.3.0/24 origin igp aspath "1 2 3 4" nexthop 1.2.3.4
+gobgp global rib -a ipv4 add 1.2.3.0/24 origin igp aspath 1,2,3,4 nexthop 1.2.3.4
+
+(set -x; for n in 10.{0..255}.{0..255}.0/24; do gobgp global rib -a ipv4 add $n origin igp aspath 1,2,3,4 nexthop 1.2.3.4& done)
+
+running=0
+max=20
+for n in 10.{0..255}.{0..255}.0/24; do
+  if [ $running -ge $max ]; then
+    wait
+    running=$(($running - 1))
+  fi
+  gobgp global rib -a ipv4 add $n origin igp aspath 1,2,3,4 nexthop 1.2.3.4 &
+  running=$(($running + 1))
+done
+echo "wrapping up"
+while [ $running -ne 0 ]; then
+  wait
+  running=$(($running - 1))
+fi
+echo "done"
+
 ```
+# Python GoBGP interface
+* https://github.com/osrg/gobgp/blob/master/docs/sources/grpc-client.md#python
+* https://github.com/osrg/gobgp/blob/master/docs/sources/grpc-client.md#python
