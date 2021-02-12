@@ -7,9 +7,10 @@ run:
 		--name $(CNT_NAME) \
 		-v $(PWD)/conf:/etc/gobgp:rw \
 		--network host \
-		--privileged \
+		-e GOMAXPROCS=2 \
 		$(IMAGE) \
 		gobgpd -p -t yaml -f /etc/gobgp/gobgp.conf
+		#--privileged \
 
 .PHONY: shell
 shell:
@@ -20,7 +21,8 @@ BVIEW = latest-bview.gz
 .PHONY: load-global
 load-global: $(BVIEW)
 	docker cp $(BVIEW) $(CNT_NAME):/
-	docker exec -it $(CNT_NAME) bash -lc '/go/bin/gobgp mrt inject global <(zcat /latest-bview.gz)'
+	docker exec -it $(CNT_NAME) bash -lc 'gunzip /latest-bview.gz'
+	docker exec -e GOMAXPROCS=1 -it $(CNT_NAME) bash -lc '/go/bin/gobgp mrt inject global /latest-bview'
 
 $(BVIEW):
 	curl --output $@ http://data.ris.ripe.net/rrc16/latest-bview.gz
